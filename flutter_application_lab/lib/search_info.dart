@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'data_controller.dart';
+import 'edit_info.dart';
 
 class SearchInfo extends StatefulWidget {
   const SearchInfo({ Key? key }) : super(key: key);
@@ -25,9 +26,16 @@ class _SearchInfoState extends State<SearchInfo> {
         itemCount: snapshotData.docs.length, 
         itemBuilder: (BuildContext context, int index) {
           return GestureDetector(
-            child: ListTile(
-              title: Text(snapshotData.docs[index]['Name of the reporter'], style: const TextStyle(color: Colors.red, fontSize: 13)),
-              subtitle: Text(snapshotData.docs[index]['Type of Property'], style: const TextStyle(color: Colors.red, fontSize: 13)),
+            child: Column(
+              children: <Widget> [
+                ListTile(
+                  title: Text(snapshotData.docs[index]['Type of Property'], style: const TextStyle(color: Colors.red, fontSize: 13)),
+                  subtitle: Text(snapshotData.docs[index]['Name of the reporter'], style: const TextStyle(color: Colors.red, fontSize: 13)),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder:(_) => EditInfo(docToEdit: snapshotData.docs[index],)));
+                  },
+                ),
+              ],
             ),
           );
         } 
@@ -64,7 +72,7 @@ class _SearchInfoState extends State<SearchInfo> {
         title: TextField(
           style: const TextStyle(color:Colors.white),
           decoration: const InputDecoration(
-            hintText: 'Search Name of reporter',
+            hintText: 'Search Type of Property',
             hintStyle: TextStyle(color: Colors.white),
           ),
           controller: searchController,
@@ -73,7 +81,7 @@ class _SearchInfoState extends State<SearchInfo> {
       body: isExcectual 
         ? searchData() :
         const Center(
-          child: Text('Search any courses', style: TextStyle(
+          child: Text('', style: TextStyle(
             color: Colors.blue, fontSize: 30.0
           )),
         )

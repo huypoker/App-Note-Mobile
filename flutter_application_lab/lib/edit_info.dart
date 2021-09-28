@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:date_range_form_field/date_range_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -22,13 +21,29 @@ class _EditInfoState extends State<EditInfo> {
   String? _dropdownValue3;
   String? _dropdownValue2;
   String? _dropdownValue;
-  DateTimeRange?  _myDateRange;
+  DateTime selectedDate = DateTime.now();
 
+  final TextEditingController _date = TextEditingController();
   TextEditingController _nameEditingController = TextEditingController();
   TextEditingController _priceEditingController = TextEditingController();
   TextEditingController _noteEditController = TextEditingController();
 
   final CollectionReference collectionReference = FirebaseFirestore.instance.collection('contacts');
+
+  
+  Future<Null> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(1901, 1),
+        lastDate: DateTime(2100));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        _date.value = TextEditingValue(text: picked.toString());
+      });
+    }
+  }
 
   @override
   void initState(){
@@ -37,7 +52,6 @@ class _EditInfoState extends State<EditInfo> {
     _priceEditingController = TextEditingController(text: widget.docToEdit['Monthly rent price']);
     _noteEditController = TextEditingController(text: widget.docToEdit['Note']);
     
-
     super.initState();
   }
 
@@ -46,12 +60,19 @@ class _EditInfoState extends State<EditInfo> {
     final _formkey = GlobalKey<FormState>();
     return Scaffold(
      appBar : AppBar(
-          title: Text('Logbook',
+          title: Text('Edit Info',
             style: GoogleFonts.montserrat()
             ),
           centerTitle: true,
           backgroundColor: Colors.blue,
           actions: [
+              IconButton(onPressed: (){      
+                collectionReference.doc('contactsId')
+                .delete().then((value) => print("Delete complete"))
+                .catchError((error) => print("Failed to delete user: $error"))
+                .whenComplete(() => Navigator.pop(context));
+              }
+              , icon: const Icon(Icons.delete)),
               // ignore: deprecated_member_use
               FlatButton(onPressed: (){
                 if (_formkey.currentState!.validate()){
@@ -61,7 +82,7 @@ class _EditInfoState extends State<EditInfo> {
                       'Funiture types': _dropdownValue3,
                       'Type of Property': _dropdownValue2,
                       'OptionOfBedrooms': _dropdownValue,
-                      'DateRange' : _myDateRange.toString(),
+                      'DateRange' : _date.text,
                       'Note' : _noteEditController.text,      
                   }).whenComplete(() => Navigator.pop(context));
                 }
@@ -145,7 +166,7 @@ class _EditInfoState extends State<EditInfo> {
                         validator: (value) => value == null
                         ? 'Please fill in your option' : null,
                         decoration: const InputDecoration(
-                          labelText: 'Chooose one option'
+                          labelText: 'Type of Property'
                         ),
                       ),
                   ),
@@ -172,7 +193,7 @@ class _EditInfoState extends State<EditInfo> {
                         validator: (value) => value == null
                         ? 'Please fill in your option' : null,
                         decoration: const InputDecoration(
-                          labelText: 'Chooose one option'
+                          labelText: 'Funiture types'
                         ),
                       ),
                   ),
@@ -199,53 +220,54 @@ class _EditInfoState extends State<EditInfo> {
                         validator: (value) => value == null
                         ? 'Please fill in your option' : null,
                         decoration: const InputDecoration(
-                          labelText: 'Chooose one option'
+                          labelText: 'Option of Bedrooms'
                         ),
                       ),
                   ),
                 ),
-                DateRangeField(
-                    enabled: true,
-                    initialValue: DateTimeRange(
-                        start: DateTime.now(),
-                        end: DateTime.now().add(const Duration(days: 5))),
-                    decoration:const InputDecoration(
-                      labelText: 'Date Range',
-                      prefixIcon: Icon(Icons.date_range),
-                      hintText: 'Please select a start and end date',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value!.start.isBefore(DateTime.now())) {
-                        return 'Please enter a later start date';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      setState(() {
-                        _myDateRange = value!;
-                      });
-                    }),
-                Container(
-                  margin:const EdgeInsets.all(5),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: Colors.black,width:1),
-                        color: Colors.white
-                      ),
-                    child: TextFormField(   
-                      controller: _noteEditController,   
-                      decoration: InputDecoration(
-                        labelText: 'Note ',
-                        border: InputBorder.none,
-                        hintText: "Enter some text",
-                        hintStyle: GoogleFonts.montserrat(color: Colors.black)
+                const SizedBox(height: 3),
+                GestureDetector(
+                        onTap: () => _selectDate(context),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: _date,
+                            validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please choose date picker';
+                          }
+                          return null;
+                        },  
+                            keyboardType: TextInputType.datetime,
+                            decoration: const InputDecoration(
+                              hintText: 'Date picker',
+                              prefixIcon: Icon(
+                                Icons.dialpad,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),    
-                ),
-              ],
-            ),
+                      ),
+                  const SizedBox(height: 3),
+                  Container(
+                    margin:const EdgeInsets.all(5),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(color: Colors.black,width:1),
+                          color: Colors.white
+                        ),
+                      child: TextFormField(   
+                        controller: _noteEditController,   
+                        decoration: InputDecoration(
+                          labelText: 'Note ',
+                          border: InputBorder.none,
+                          hintText: "Enter some text",
+                          hintStyle: GoogleFonts.montserrat(color: Colors.black)
+                          ),
+                        ),    
+                  ),
+                ],
+              ),
           ),
         ),
       ),
@@ -256,6 +278,6 @@ class _EditInfoState extends State<EditInfo> {
       child: Text(
         item,
         style:const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-      ),
-    );
+    ),
+  );
 }

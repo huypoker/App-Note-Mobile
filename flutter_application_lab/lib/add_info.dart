@@ -1,7 +1,10 @@
-import 'package:date_range_form_field/date_range_form_field.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'home_page.dart';
 
 
 
@@ -19,20 +22,35 @@ class _AddInfomationState extends State<AddInfomation> {
   String? _dropdownValue3;
   String? _dropdownValue2;
   String? _dropdownValue;
-  DateTimeRange?  _myDateRange;
+  DateTime selectedDate = DateTime.now();
 
+  final TextEditingController _date = TextEditingController();
   final TextEditingController _nameEditingController = TextEditingController();
   final TextEditingController _priceEditingController = TextEditingController();
   final TextEditingController _noteEditController = TextEditingController();
 
   final CollectionReference collectionReference = FirebaseFirestore.instance.collection('contacts');
 
+  Future<Null> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(1901, 1),
+        lastDate: DateTime(2100));
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        _date.value = TextEditingValue(text: picked.toString());
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final _formkey = GlobalKey<FormState>();
     return Scaffold(
      appBar : AppBar(
-          title: Text('Logbook',
+          title: Text('Add Form',
             style: GoogleFonts.montserrat()
             ),
           centerTitle: true,
@@ -61,9 +79,9 @@ class _AddInfomationState extends State<AddInfomation> {
                         return null;
                       },  
                       decoration: InputDecoration(
-                        labelText: 'Activity Name ',
+                        labelText: 'Name',
                         border: InputBorder.none,
-                        hintText: "Enter activity name",
+                        hintText: "Enter name of the reporter",
                         hintStyle: GoogleFonts.montserrat(color: Colors.black)
                         ),
                       ),    
@@ -77,13 +95,17 @@ class _AddInfomationState extends State<AddInfomation> {
                         color: Colors.white
                       ),
                     child: TextFormField(   
+                      keyboardType: TextInputType.number, 
+                      inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                      ],
                       controller: _priceEditingController,   
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter price';
                         }
                         return null;
-                      },  
+                      }, 
                       decoration: InputDecoration(
                         labelText: 'Monthly rent price',
                         border: InputBorder.none,
@@ -114,7 +136,7 @@ class _AddInfomationState extends State<AddInfomation> {
                         validator: (value) => value == null
                         ? 'Please fill in your option' : null,
                         decoration: const InputDecoration(
-                          labelText: 'Chooose one option'
+                          labelText: 'Type of Property'
                         ),
                       ),
                   ),
@@ -141,7 +163,7 @@ class _AddInfomationState extends State<AddInfomation> {
                         validator: (value) => value == null
                         ? 'Please fill in your option' : null,
                         decoration: const InputDecoration(
-                          labelText: 'Chooose one option'
+                          labelText: 'Funiture types'
                         ),
                       ),
                   ),
@@ -168,33 +190,34 @@ class _AddInfomationState extends State<AddInfomation> {
                         validator: (value) => value == null
                         ? 'Please fill in your option' : null,
                         decoration: const InputDecoration(
-                          labelText: 'Chooose one option'
+                          labelText: 'Option of Bedrooms'
                         ),
                       ),
                   ),
                 ),
-                DateRangeField(
-                    enabled: true,
-                    initialValue: DateTimeRange(
-                        start: DateTime.now(),
-                        end: DateTime.now().add(const Duration(days: 5))),
-                    decoration: const InputDecoration(
-                      labelText: 'Date Range',
-                      prefixIcon: Icon(Icons.date_range),
-                      hintText: 'Please select a start and end date',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value!.start.isBefore(DateTime.now())) {
-                        return 'Please enter a later start date';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) {
-                      setState(() {
-                        _myDateRange = value!;
-                      });
-                    }),
+                const SizedBox(height: 3),
+                GestureDetector(
+                        onTap: () => _selectDate(context),
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: _date,
+                            validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please choose date picker';
+                          }
+                          return null;
+                        },  
+                            keyboardType: TextInputType.datetime,
+                            decoration: const InputDecoration(
+                              hintText: 'Date picker',
+                              prefixIcon: Icon(
+                                Icons.dialpad,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                const SizedBox(height: 3),
                 Container(
                   margin: const EdgeInsets.all(5),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -220,24 +243,37 @@ class _AddInfomationState extends State<AddInfomation> {
                       context: context,
                       builder: (BuildContext context) => AlertDialog(
                           title: const Text('AlertDialog Title'),
-                          content:  const Text(''),
+                          content: Material( 
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: <Widget> [
+                                Text(_nameEditingController.text),
+                                Text(_priceEditingController.text),
+                                Text(_dropdownValue3!),
+                                Text(_dropdownValue2!),
+                                Text(_dropdownValue!),
+                                Text(_date.text),
+                                Text(_noteEditController.text),
+                              ],
+                            ),
+                          ),
                           actions: <Widget>[
-                             Column( ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, 'Cancel'),
                               child: const Text('Cancel'),
                             ),
                             TextButton( 
                               onPressed: ()  => {  
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => Homepage())),
                                 collectionReference.add({
                                 'Name of the reporter': _nameEditingController.text,
                                 'Monthly rent price': _priceEditingController.text,
                                 'Funiture types': _dropdownValue3,
                                 'Type of Property': _dropdownValue2,
                                 'OptionOfBedrooms': _dropdownValue,
-                                'DateRange' : _myDateRange.toString(),
+                                'DateRange' : _date.text,
                                 'Note' : _noteEditController.text,            
-                                })
+                                }),
                               },
                               child: const Text('OK'),
                             ),
