@@ -1,26 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_lab/add_info.dart';
-import 'package:flutter_application_lab/search_info.dart';
+import 'package:flutter_application_lab/view/Dashboard/dashboard_view.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../Controller/home_controller.dart';
+import '../EditInfo/edit_info.dart';
 
 
-import 'edit_info.dart';
-
-// ignore: use_key_in_widget_constructors
-class Homepage extends StatefulWidget {
-
-  @override
-  State<Homepage> createState() => _HomepageState();
-}
-
-class _HomepageState extends State<Homepage> {
-  
-
+class HomeView extends GetView<HomeController> {
   final ref = FirebaseFirestore.instance.collection('contacts');
+
+   HomeView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+     
     return Scaffold(
       appBar: AppBar(
          title: Text('Homepage',
@@ -28,16 +22,7 @@ class _HomepageState extends State<Homepage> {
             ),
           centerTitle: true,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed:(){
-               Navigator.push(context,MaterialPageRoute(builder: (_) =>  const SearchInfo() ));
-          })
-        ],
       ),
-      floatingActionButton: FloatingActionButton(child: const Icon(Icons.add),
-        onPressed:(){
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const AddInfomation()));
-        },),
       body: Column(
         children: <Widget> [
           Expanded(
@@ -47,16 +32,47 @@ class _HomepageState extends State<Homepage> {
                 return GridView.builder(gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
                   itemCount: snapshot.hasData?snapshot.data!.docs.length:0,
                   itemBuilder: (_,index){
+                    final AlertDialog dialog = AlertDialog(
+                    title: const Text('Are you sure you want to delete it?'),
+                    actions: [
+                      // ignore: deprecated_member_use
+                      FlatButton(
+                        textColor: const Color(0xFF6200EE),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('CANCEL'),
+                      ),
+                      // ignore: deprecated_member_use
+                      FlatButton(
+                        textColor: const Color(0xFF6200EE),
+                        onPressed: () async {    
+                            Navigator.push(context, MaterialPageRoute(builder: (_) =>  HomeView()));
+                            await FirebaseFirestore.instance.runTransaction((Transaction myTransaction) async {
+                                myTransaction.delete(snapshot.data!.docs[index].reference);
+                            }); 
+                          },
+                        child: const Text('ACCEPT'),
+                      ),
+                    ],
+                  );
                    return GestureDetector(
                      onTap:(){
                        Navigator.push(context, MaterialPageRoute(builder:(_) => EditInfo(docToEdit: snapshot.data!.docs[index],)));
-                     },
+                     }, 
                      child: Container(
                        margin: const EdgeInsets.all(10),
                        height: 150,
                        color: Colors.grey[200],
                        child: Column(
                          children: <Widget> [
+                           // ignore: deprecated_member_use
+                           FlatButton(
+                              textColor: const Color(0xFF6200EE),
+                              highlightColor: Colors.transparent,
+                              onPressed: () {
+                                showDialog<void>(context: context, builder: (context) => dialog);
+                              },
+                              child: const Icon(Icons.delete), 
+                            ),
                            Row(
                              children: <Widget> [
                                 Text(
@@ -103,7 +119,7 @@ class _HomepageState extends State<Homepage> {
                            Row(
                              children: <Widget> [
                                 Text(
-                                  "Date: ", style: TextStyle(color: Colors.blueAccent.shade700, fontSize: 13)
+                                  "Date time: ", style: TextStyle(color: Colors.blueAccent.shade700, fontSize: 13)
                                 ),
                              ],
                            ),
@@ -129,7 +145,7 @@ class _HomepageState extends State<Homepage> {
             ),
           ),
         ],
-      ),
+      ),   
     );
   }
 }

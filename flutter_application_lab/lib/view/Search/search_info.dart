@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'data_controller.dart';
-import 'edit_info.dart';
+import '../../Controller/data_controller.dart';
+import '../EditInfo/edit_info.dart';
 
 class SearchInfo extends StatefulWidget {
   const SearchInfo({ Key? key }) : super(key: key);

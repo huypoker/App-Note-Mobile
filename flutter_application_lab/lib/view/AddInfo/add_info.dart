@@ -1,10 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_lab/view/Dashboard/dashboard_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'home_page.dart';
+import '../Homepage/home_page.dart';
 
 
 
@@ -31,7 +32,7 @@ class _AddInfomationState extends State<AddInfomation> {
 
   final CollectionReference collectionReference = FirebaseFirestore.instance.collection('contacts');
 
-  Future<Null> _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
         context: context,
         initialDate: selectedDate,
@@ -264,7 +265,7 @@ class _AddInfomationState extends State<AddInfomation> {
                             ),
                             TextButton( 
                               onPressed: ()  => {  
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => Homepage())),
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => DashboardPage())),
                                 collectionReference.add({
                                 'Name of the reporter': _nameEditingController.text,
                                 'Monthly rent price': _priceEditingController.text,
