@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_lab/view/AddInfo/add_view.dart';
 import 'package:flutter_application_lab/view/Homepage/home_page.dart';
 import 'package:flutter_application_lab/view/Search/search_view.dart';
 import 'package:get/get.dart';
 import '../../Controller/dashboard_controller.dart';
-import '../AddInfo/add_info.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -18,8 +18,8 @@ class DashboardPage extends StatelessWidget {
            index: controller.tabIndex,
            children:[
             HomeView(),
-            const AddInfomation(),
-            const SearchView(),
+             AddView(),
+             SearchView(),
            ]
          ),
       ),

@@ -5,7 +5,9 @@ import 'package:flutter_application_lab/view/Dashboard/dashboard_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../Homepage/home_page.dart';
+import 'screen_noti.dart';
+
+
 
 
 
@@ -265,7 +267,7 @@ class _AddInfomationState extends State<AddInfomation> {
                             ),
                             TextButton( 
                               onPressed: ()  => {  
-                                Navigator.push(context, MaterialPageRoute(builder: (_) => DashboardPage())),
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const ScreenNoti())),
                                 collectionReference.add({
                                 'Name of the reporter': _nameEditingController.text,
                                 'Monthly rent price': _priceEditingController.text,

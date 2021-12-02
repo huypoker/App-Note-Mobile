@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_lab/view/Dashboard/dashboard_view.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Controller/home_controller.dart';
@@ -45,7 +44,9 @@ class HomeView extends GetView<HomeController> {
                       FlatButton(
                         textColor: const Color(0xFF6200EE),
                         onPressed: () async {    
-                            Navigator.push(context, MaterialPageRoute(builder: (_) =>  HomeView()));
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/DashboardPage',
+                          (Route<dynamic> route) => false);
                             await FirebaseFirestore.instance.runTransaction((Transaction myTransaction) async {
                                 myTransaction.delete(snapshot.data!.docs[index].reference);
                             }); 
@@ -145,7 +146,8 @@ class HomeView extends GetView<HomeController> {
             ),
           ),
         ],
-      ),   
+      ),  
+ 
     );
   }
 }
